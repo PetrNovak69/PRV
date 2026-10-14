@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GetGames - Podpora</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+ 
+    <div class="support-container">
+ 
+        <header>
+            <h1>GetGames</h1>
+            <p>Centrum zákaznické podpory</p>
+        </header>
+ 
+        <main>
+            <section class="question-box">
+                <h2>Napište nám</h2>
+                <p>Vyplňte svůj e-mail a popište svůj problém nebo dotaz.</p>
+ 
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Váš e-mail"
+                >
+ 
+                <textarea
+                    id="question"
+                    placeholder="Napište svůj dotaz..."
+                ></textarea>
+ 
+                <button onclick="sendQuestion()">Odeslat dotaz</button>
+            </section>
+ 
+            <section class="answer-box">
+                <h2>Odpověď podpory</h2>
+ 
+                <div id="answer">
+                    Zde se zobrazí odpověď zákaznické podpory.
+                </div>
+            </section>
+        </main>
+ 
+        <footer>
+            © 2026 GetGames · Zákaznická podpora
+        </footer>
+ 
+    </div>
+ 
+    <script>
+        function sendQuestion() {
+            const email = document.getElementById("email").value;
+            const question = document.getElementById("question").value;
+            const answer = document.getElementById("answer");
+ 
+            if (email.trim() === "") {
+                answer.textContent = "Prosím zadejte svůj e-mail.";
+                return;
+            }
+ 
+            if (question.trim() === "") {
+                answer.textContent = "Prosím napište svůj dotaz.";
+                return;
+            }
+ 
+            answer.textContent =
+                "Děkujeme za váš dotaz. Odpověď vám zašleme na e-mail " + email + ".";
+        }
+    </script>
+ 
+</body>
+</html>
