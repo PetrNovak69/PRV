@@ -1,30 +1,39 @@
 import os
+from pathlib import Path
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from openai import OpenAI
+
+
+# ============================================================
+# VDF Games Support Tool
+# Backend: Flask + Render + OpenAI Responses API
+# ============================================================
 
 app = Flask(__name__)
-
-# Pro školní projekt povolíme CORS všude (později se dá zpřísnit)
 CORS(app)
+app.config["MAX_CONTENT_LENGTH"] = 32 * 1024
 
-@app.get("/")
-def home():
-    return "GetGames Support Backend is running"
 
-@app.post("/chat")
-def chat():
-    data = request.get_json(silent=True) or {}
-    message = (data.get("message") or "").strip()
-    student = (data.get("student") or "unknown").strip()
+# ------------------------------------------------------------
+# 1. Proměnné prostředí
+# ------------------------------------------------------------
 
-    if not message:
-        return jsonify({"error": "message is required"}), 400
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+OPENAI_MODEL = os.environ.get("OPENAI_MODEL")
 
-    # Zatím fake odpověď (fáze BACKEND)
-    reply = f"[DEMO] Přijal jsem dotaz od {student}: {message}"
+client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
-    return jsonify({"reply": reply})
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", "8000"))
-    app.run(host="0.0.0.0", port=port, debug=True)
+# ------------------------------------------------------------
+# 2. Firemní dokumentace
+# ------------------------------------------------------------
+
+BASE_DIR = Path(__file__).resolve().parent
+DOCUMENTATION_PATH = BASE_DIR / "docs" / "podpora.md"
+
+try:
+    documentation = DOCUMENTATION_PATH.read_text(encoding="utf-8")
+except FileNotFoundError:
+    documentation = ""
