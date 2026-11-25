@@ -1,150 +1,439 @@
 
-<div id="support-chat">
-    <h2>VDF Games Support</h2>
+<!DOCTYPE html>
+<html lang="cs">
 
-    <div id="chat-messages">
-        <div class="bot-message">
-            Dobrý den! Jak vám mohu pomoci?
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>VDF Games Support</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+
+        /* TLAČÍTKO PODPORY */
+
+        #support-button {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 16px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px #0004;
+            z-index: 9999;
+        }
+
+        /* CHATOVACÍ OKNO */
+
+        #support-window {
+            display: none;
+            position: fixed;
+            bottom: 90px;
+            right: 25px;
+            width: 370px;
+            max-width: calc(100vw - 30px);
+            height: 520px;
+            max-height: calc(100vh - 120px);
+            background: #181818;
+            color: white;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 5px 25px #0005;
+            z-index: 9999;
+        }
+
+        /* HLAVIČKA */
+
+        #support-header {
+            background: #2563eb;
+            padding: 17px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        #close-chat {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 25px;
+            cursor: pointer;
+        }
+
+        /* ZPRÁVY */
+
+        #chat-messages {
+            height: calc(100% - 130px);
+            overflow-y: auto;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 10px;
+            max-width: 85%;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .user-message {
+            background: #2563eb;
+            align-self: flex-end;
+        }
+
+        .bot-message {
+            background: #333333;
+            align-self: flex-start;
+        }
+
+        /* VSTUPNÍ POLE */
+
+        #chat-input-area {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            background: #222222;
+        }
+
+        #chat-input {
+            flex: 1;
+            min-width: 0;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            outline: none;
+        }
+
+        #send-button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        #send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* MOBILNÍ ZAŘÍZENÍ */
+
+        @media (max-width: 480px) {
+            #support-window {
+                right: 10px;
+                bottom: 80px;
+                width: calc(100vw - 20px);
+                height: 70vh;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- TLAČÍTKO PODPORY -->
+
+    <button id="support-button">
+        💬 Podpora VDF Games
+    </button>
+
+
+    <!-- CHATOVACÍ OKNO -->
+
+    <div id="support-window">
+
+        <div id="support-header">
+            <span>VDF Games Support</span>
+
+            <button id="close-chat">×</button>
         </div>
+
+        <div id="chat-messages">
+
+            <div class="message bot-message">
+                Dobrý den! Vítejte v podpoře VDF Games.
+
+                Jak vám můžeme pomoci?
+            </div>
+
+        </div>
+
+        <div id="chat-input-area">
+
+            <input
+                type="text"
+                id="chat-input"
+                placeholder="Napište svůj dotaz..."
+                maxlength="4000"
+                autocomplete="off"
+            >
+
+            <button id="send-button">
+                Odeslat
+            </button>
+
+        </div>
+
     </div>
 
-    <div class="chat-input">
-        <input
-            type="text"
-            id="user-message"
-            placeholder="Napište svůj dotaz..."
-        >
 
-        <button onclick="sendMessage()">
-            Odeslat
-        </button>
-    </div>
-</div>
+    <script>
 
-<style>
-#support-chat {
-    max-width: 450px;
-    margin: 30px auto;
-    padding: 20px;
-    background: #181818;
-    color: white;
-    border-radius: 12px;
-    font-family: Arial, sans-serif;
-}
+        // =========================================
+        // NASTAVENÍ GEMINI API
+        // =========================================
 
-#chat-messages {
-    height: 350px;
-    overflow-y: auto;
-    padding: 10px;
-    background: #242424;
-    border-radius: 8px;
-    margin-bottom: 15px;
-}
+        const API_URL =
+            "https://prv-9.onrender.com/api/chat";
 
-.bot-message, .user-message {
-    padding: 12px;
-    margin: 8px 0;
-    border-radius: 8px;
-    max-width: 85%;
-    white-space: pre-wrap;
-}
 
-.bot-message {
-    background: #343434;
-}
+        // =========================================
+        // ELEMENTY WEBU
+        // =========================================
 
-.user-message {
-    background: #2456a6;
-    margin-left: auto;
-}
+        const supportButton =
+            document.getElementById("support-button");
 
-.chat-input {
-    display: flex;
-    gap: 8px;
-}
+        const supportWindow =
+            document.getElementById("support-window");
 
-.chat-input input {
-    flex: 1;
-    min-width: 0;
-    padding: 12px;
-    border-radius: 6px;
-    border: none;
-}
+        const closeButton =
+            document.getElementById("close-chat");
 
-.chat-input button {
-    padding: 12px;
-    background: #2463eb;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-</style>
+        const chatMessages =
+            document.getElementById("chat-messages");
 
-<script>
-const API_URL = "https://TVUJ-SERVER.onrender.com/api/chat";
+        const chatInput =
+            document.getElementById("chat-input");
 
-async function sendMessage() {
-    const input = document.getElementById("user-message");
-    const messages = document.getElementById("chat-messages");
+        const sendButton =
+            document.getElementById("send-button");
 
-    const message = input.value.trim();
 
-    if (!message) return;
+        // =========================================
+        // HISTORIE KONVERZACE
+        // =========================================
 
-    addMessage(message, "user-message");
-    input.value = "";
+        const conversation = [];
 
-    const loading = addMessage(
-        "Podpora připravuje odpověď...",
-        "bot-message"
-    );
 
-    try {
-        const response = await fetch(API_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                message: message
-            })
+        // =========================================
+        // OTEVŘENÍ CHATU
+        // =========================================
+
+        supportButton.addEventListener("click", () => {
+
+            supportWindow.style.display = "block";
+
+            supportButton.style.display = "none";
+
+            chatInput.focus();
+
         });
 
-        const data = await response.json();
 
-        if (!response.ok || !data.success) {
-            throw new Error(data.error || "Chyba serveru");
+        // =========================================
+        // ZAVŘENÍ CHATU
+        // =========================================
+
+        closeButton.addEventListener("click", () => {
+
+            supportWindow.style.display = "none";
+
+            supportButton.style.display = "block";
+
+        });
+
+
+        // =========================================
+        // PŘIDÁNÍ ZPRÁVY DO CHATU
+        // =========================================
+
+        function addMessage(text, type) {
+
+            const element =
+                document.createElement("div");
+
+            element.className = "message " + type;
+
+            element.textContent = text;
+
+            chatMessages.appendChild(element);
+
+            chatMessages.scrollTop =
+                chatMessages.scrollHeight;
+
+            return element;
+
         }
 
-        loading.textContent = data.response;
 
-    } catch (error) {
-        loading.textContent =
-            "Omlouváme se, momentálně se nepodařilo spojit s podporou.";
-        console.error(error);
-    }
-    
-    messages.scrollTop = messages.scrollHeight;
-}
+        // =========================================
+        // ODESLÁNÍ ZPRÁVY GEMINI
+        // =========================================
 
-function addMessage(text, className) {
-    const messages = document.getElementById("chat-messages");
+        async function sendMessage() {
 
-    const element = document.createElement("div");
-    element.className = className;
-    element.textContent = text;
+            const message = chatInput.value.trim();
 
-    messages.appendChild(element);
-    messages.scrollTop = messages.scrollHeight;
+            if (!message || sendButton.disabled) {
+                return;
+            }
 
-    return element;
-}
 
-document.getElementById("user-message")
-    .addEventListener("keydown", function(event) {
-        if (event.key === "Enter") {
-            sendMessage();
+            // Zobrazit zprávu zákazníka
+
+            addMessage(message, "user-message");
+
+            chatInput.value = "";
+
+
+            // Uložit zprávu do historie
+
+            conversation.push({
+                role: "user",
+                content: message
+            });
+
+
+            // Indikátor načítání
+
+            const loading = addMessage(
+                "Podpora právě připravuje odpověď...",
+                "bot-message"
+            );
+
+
+            sendButton.disabled = true;
+
+
+            try {
+
+                // Odeslání požadavku na Render
+
+                const response = await fetch(API_URL, {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        messages: conversation
+                    })
+
+                });
+
+
+                const data = await response.json();
+
+
+                // Kontrola odpovědi serveru
+
+                if (!response.ok || !data.success) {
+
+                    throw new Error(
+                        data.error || "Chyba serveru."
+                    );
+
+                }
+
+
+                // Zobrazení odpovědi Gemini
+
+                loading.textContent = data.response;
+
+
+                // Uložení odpovědi do historie
+
+                conversation.push({
+                    role: "model",
+                    content: data.response
+                });
+
+
+            } catch (error) {
+
+                console.error(
+                    "VDF Games Support Error:",
+                    error
+                );
+
+
+                loading.textContent =
+                    "Omlouváme se, podpora je momentálně nedostupná. Zkuste to prosím později.";
+
+
+                // Odstranění neúspěšného dotazu z historie
+
+                conversation.pop();
+
+
+            } finally {
+
+                sendButton.disabled = false;
+
+                chatMessages.scrollTop =
+                    chatMessages.scrollHeight;
+
+                chatInput.focus();
+
+            }
+
         }
-    });
-</script>
+
+
+        // =========================================
+        // ODESLÁNÍ TLAČÍTKEM
+        // =========================================
+
+        sendButton.addEventListener(
+            "click",
+            sendMessage
+        );
+
+
+        // =========================================
+        // ODESLÁNÍ PŘES ENTER
+        // =========================================
+
+        chatInput.addEventListener(
+            "keydown",
+            (event) => {
+
+                if (event.key === "Enter") {
+                    sendMessage();
+                }
+
+            }
+        );
+
+    </script>
+
+</body>
+</html>
