@@ -1,3 +1,4 @@
+
 import os
 from pathlib import Path
 
@@ -8,7 +9,7 @@ from google import genai
 
 # ============================================================
 # VDF Games Support Tool
-# Backend: Flask + Render + OpenAI Responses API
+# Backend: Flask + Render + Google Gemini API
 # ============================================================
 
 app = Flask(__name__)
@@ -20,10 +21,10 @@ app.config["MAX_CONTENT_LENGTH"] = 32 * 1024
 # 1. Proměnné prostředí
 # ------------------------------------------------------------
 
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-OPENAI_MODEL = os.environ.get("OPENAI_MODEL")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 
-client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
+client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
 
 # ------------------------------------------------------------
